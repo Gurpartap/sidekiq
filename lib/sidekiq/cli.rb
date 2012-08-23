@@ -5,6 +5,13 @@ trap 'INT' do
 end
 
 trap 'TERM' do
+  # probing for backtrace on heroku.
+  Thread.list.each do |thread|
+    Sidekiq.logger.info "Thread TID-#{thread.object_id.to_s(36)} #{thread['label']}"
+    Sidekiq.logger.info thread.backtrace.join("\n")
+  end
+  sleep 2
+  
   # Heroku sends TERM and then waits 10 seconds for process to exit.
   Sidekiq::CLI.instance.interrupt
 end
